@@ -12,11 +12,15 @@ class PostImagesController < ApplicationController
   end
 
   def index
+    #　↓投稿を全て表示
     @post_images=PostImage.all
+    # ↓限られたベー字数のみ表示（kaminari gem使用で使える）
+    @post_images=PostImage.page(params[:page]).reverse_order
   end
 
   def show
     @post_image=PostImage.find(params[:id])
+    @post_comment=PostComment.new
   end
 
   def destroy

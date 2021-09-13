@@ -5,4 +5,15 @@ class PostImage < ApplicationRecord
   
   # refile gemを使うために記入が必要
   attachment :image
+  
+  # PostImageモデルと1:N 投稿記事が消えると投稿コメントも消える
+  has_many :post_comments,dependent: :destroy
+  
+  has_many :favorites,dependent: :destroy
+  # ユーザーIDがFavoriteテーブル内に存在するか確認
+  def favorited_by?(user)
+    favorites.where(user_id: user.id).exists?
+  end
+  
+  
 end

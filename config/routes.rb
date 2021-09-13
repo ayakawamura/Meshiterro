@@ -4,5 +4,11 @@ Rails.application.routes.draw do
   root to:"homes#top"
 
 # post_imagesコントローラーのルート設定
-  resources :post_images,only:[:new,:create,:index,:show,:destroy]
+  resources :post_images,only:[:new,:create,:index,:show,:destroy] do
+    # いいね機能コントローラ
+    resource :favorites,only:[:create,:destroy]
+    # post_commentのルート設定　投稿画像に対してコメントするため以下のように親子関係になる
+    resources :post_comments, only:[:create,:destroy]
+  end
+  
 end
