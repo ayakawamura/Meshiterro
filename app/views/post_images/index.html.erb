@@ -1,22 +1,4 @@
-<!--コントローラから渡された@post_images変数内から1つずつ取り出して、post_image変数へ格納-->
-<% @post_images.each do |post_image| %>
 
-<div>
-  <!--詳細画面へのリンク　do~endまでの間がaタグに囲まれたimgタグになる-->
-  <%= link_to post_image_path(post_image.id) do %>
-  <!--記載するとrefile gemがimgタグを作成してくれる-->
-  <%= attachment_image_tag post_image, :image %>
-  <% end %>
-  
-  <p>投稿ユーザー画像：<%= attachment_image_tag post_image.user,:profile_image, :fill, 60, 60, fallback: "no_image.jpg" %><>
-  <p>ショップ名：<%= post_image.shop_name %></p>
-  <p>説明：<%= post_image.caption %></p>
-  <p>ユーザーネーム：<%= post_image.user.name %></p>
-  <!--コメント件数の表示-->
-  <p><%= link_to "#{post_image.post_comments.count} コメント", post_image_path(post_image.id) %></p>
+<!--部分テンプレートの呼び出し-->
+<%= render 'post_images/list', post_images: @post_images %>
 
-</div>
-<% end %>
-
-<!--ページング機能-->
-<%= paginate @post_images %>
