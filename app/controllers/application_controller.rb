@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  # ログイン認証ができない場合はログインページへ戻る
+  before_action :authenticate_user!,expect:[:top]
   
   #deviseのストロングパラメータ ４−２
   before_action :configure_permitted_parameters, if: :devise_controller?

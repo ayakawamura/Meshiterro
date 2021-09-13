@@ -1,0 +1,114 @@
+[1mdiff --git a/app/controllers/application_controller.rb b/app/controllers/application_controller.rb[m
+[1mindex 858193f..d3bbc42 100644[m
+[1m--- a/app/controllers/application_controller.rb[m
+[1m+++ b/app/controllers/application_controller.rb[m
+[36m@@ -1,4 +1,6 @@[m
+ class ApplicationController < ActionController::Base[m
+[32m+[m[32m  # ログイン認証ができない場合はログインページへ戻る[m
+[32m+[m[32m  before_action :authenticate_user!,expect:[:top][m
+   [m
+   #deviseのストロングパラメータ ４−２[m
+   before_action :configure_permitted_parameters, if: :devise_controller?[m
+[1mdiff --git a/app/models/user.rb b/app/models/user.rb[m
+[1mindex 319bb7a..e65fdb9 100644[m
+[1m--- a/app/models/user.rb[m
+[1m+++ b/app/models/user.rb[m
+[36m@@ -11,4 +11,6 @@[m [mclass User < ApplicationRecord[m
+   [m
+   has_many :favorites,dependent: :destroy[m
+   [m
+[32m+[m[32m  # ユーザー画像の投稿をできるようにする　カラム名から_idを除いた名前を記述[m
+[32m+[m[32m  attachment :profile_image[m
+ end[m
+[1mdiff --git a/app/views/layouts/application.html.erb b/app/views/layouts/application.html.erb[m
+[1mindex d77a3a6..b5db73e 100644[m
+[1m--- a/app/views/layouts/application.html.erb[m
+[1m+++ b/app/views/layouts/application.html.erb[m
+[36m@@ -18,6 +18,11 @@[m
+       <li>[m
+         <%= link_to "ログアウト", destroy_user_session_path, method: :delete %>[m
+       </li>[m
+[32m+[m[32m      <li>[m
+[32m+[m[32m        <%= link_to "マイページ", user_path(current_user.id) %>[m
+[32m+[m[32m      </li>[m
+[32m+[m[41m      [m
+[32m+[m[41m      [m
+     <% else %>[m
+       <li>[m
+         <%= link_to "新規登録", new_user_registration_path %>[m
+[1mdiff --git a/app/views/post_images/index.html.erb b/app/views/post_images/index.html.erb[m
+[1mindex 98515c4..a5cb9d2 100644[m
+[1m--- a/app/views/post_images/index.html.erb[m
+[1m+++ b/app/views/post_images/index.html.erb[m
+[36m@@ -8,7 +8,7 @@[m
+   <%= attachment_image_tag post_image, :image %>[m
+   <% end %>[m
+   [m
+[31m-  <p>投稿ユーザー画像：<%= image_tag('sample-author1.jpg') %></p>[m
+[32m+[m[32m  <p>投稿ユーザー画像：<%= attachment_image_tag post_image.user,:profile_image, :fill, 60, 60, fallback: "no_image.jpg" %><>[m
+   <p>ショップ名：<%= post_image.shop_name %></p>[m
+   <p>説明：<%= post_image.caption %></p>[m
+   <p>ユーザーネーム：<%= post_image.user.name %></p>[m
+[1mdiff --git a/app/views/post_images/show.html.erb b/app/views/post_images/show.html.erb[m
+[1mindex 3c9e1f8..4e374a0 100644[m
+[1m--- a/app/views/post_images/show.html.erb[m
+[1m+++ b/app/views/post_images/show.html.erb[m
+[36m@@ -34,7 +34,7 @@[m
+ <div>[m
+ <p>コメント件数：<%= @post_image.post_comments.count %></p>[m
+ <% @post_image.post_comments.each do |post_comment| %>[m
+[31m-  <p><%= image_tag('sample-author1.jpg') %></p>[m
+[32m+[m[32m  <p><%= attachment_image_tag post_comment.user, :profile_image, :fill, 60, 60, fallback: "no_image.jpg" %></p>[m
+   <%= post_comment.user.name %>[m
+   <%= post_comment.created_at.strftime('%Y/%m/%d') %><%= post_comment.comment %>[m
+   [m
+[1mdiff --git a/config/initializers/kaminari_config.rb b/config/initializers/kaminari_config.rb[m
+[1mindex ff510e3..fd660b6 100644[m
+[1m--- a/config/initializers/kaminari_config.rb[m
+[1m+++ b/config/initializers/kaminari_config.rb[m
+[36m@@ -12,6 +12,6 @@[m [mKaminari.configure do |config|[m
+   # config.max_pages = nil[m
+   # config.params_on_first_page = false[m
+   [m
+[31m-  config.default_per_page = 5[m
+[32m+[m[32m  config.default_per_page = 2[m
+   [m
+ end[m
+[1mdiff --git a/config/routes.rb b/config/routes.rb[m
+[1mindex 6404399..d8d5a6b 100644[m
+[1m--- a/config/routes.rb[m
+[1m+++ b/config/routes.rb[m
+[36m@@ -1,4 +1,5 @@[m
+ Rails.application.routes.draw do[m
+[32m+[m[32m  # get 'users/show'[m
+   devise_for :users[m
+   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html[m
+   root to:"homes#top"[m
+[36m@@ -11,4 +12,6 @@[m [mRails.application.routes.draw do[m
+     resources :post_comments, only:[:create,:destroy][m
+   end[m
+   [m
+[32m+[m[32m  resources :users,only:[:show, :edit, :update][m
+[32m+[m[41m  [m
+ end[m
+[1mdiff --git a/db/schema.rb b/db/schema.rb[m
+[1mindex 55ac503..ac6c7c2 100644[m
+[1m--- a/db/schema.rb[m
+[1m+++ b/db/schema.rb[m
+[36m@@ -10,7 +10,7 @@[m
+ #[m
+ # It's strongly recommended that you check this file into your version control system.[m
+ [m
+[31m-ActiveRecord::Schema.define(version: 2021_09_13_063551) do[m
+[32m+[m[32mActiveRecord::Schema.define(version: 2021_09_13_084204) do[m
+ [m
+   create_table "favorites", force: :cascade do |t|[m
+     t.integer "user_id"[m
+[36m@@ -53,6 +53,7 @@[m [mActiveRecord::Schema.define(version: 2021_09_13_063551) do[m
+     t.string "name"[m
+     t.datetime "created_at", null: false[m
+     t.datetime "updated_at", null: false[m
+[32m+[m[32m    t.string "profile_image_id"[m
+     t.index ["email"], name: "index_users_on_email", unique: true[m
+     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true[m
+   end[m

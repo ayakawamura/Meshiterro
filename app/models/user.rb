@@ -11,4 +11,6 @@ class User < ApplicationRecord
   
   has_many :favorites,dependent: :destroy
   
+  # ユーザー画像の投稿をできるようにする　カラム名から_idを除いた名前を記述
+  attachment :profile_image
 end
